@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Live Auctions</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/user/dashboard">Auction System</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/auctions">All Auctions</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-danger text-white" href="/user/logout">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Content -->
+<div class="container mt-4">
+    <div class="header-row mb-3">
+        <h2 class="mb-0">🔴 Live Auctions</h2>
+    </div>
+
+    <div th:if="${#lists.isEmpty(liveAuctions)}" class="alert alert-info text-center">
+        No live auctions right now.
+    </div>
+
+    <div class="table-responsive" th:if="${!#lists.isEmpty(liveAuctions)}">
+        <table class="table table-bordered table-hover align-middle text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th>Title</th>
+                    <th>Start Price</th>
+                    <th>Current Price</th>
+                    <th>End Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="auction : ${liveAuctions}">
+                    <td th:text="${auction.title}"></td>
+                    <td>₹<span th:text="${auction.startingPrice}"></span></td>
+                    <td>₹<span th:text="${auction.currentPrice}"></span></td>
+                    <td th:text="${#temporals.format(auction.endTime, 'dd-MM-yyyy HH:mm')}"></td>
+                    <td>
+                        <a th:href="@{'/auctions/' + ${auction.id}}" class="btn btn-outline-primary btn-sm">View</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <a href="/dashboard" class="btn btn-secondary mt-3">⬅ Back to Dashboard</a>
+</div>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

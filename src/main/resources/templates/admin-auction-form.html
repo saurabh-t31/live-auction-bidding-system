@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Auction</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom CSS for Admin Pages */
+        body {
+            background-color: #f0f2f5;
+        }
+        .navbar-admin {
+            background-color: #1a1a2e;
+        }
+        .navbar-admin .navbar-brand,
+        .navbar-admin .nav-link {
+            color: #ffffff;
+        }
+        .navbar-admin .nav-link:hover {
+            color: #ffcc00;
+        }
+        .container h2 {
+            font-weight: 700;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-admin">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin">Admin Panel</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar"
+                    aria-controls="adminNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="adminNavbar">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/auctions">Auctions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/users">Users</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/user/logout">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-5">
+        <h2>Create New Auction</h2>
+        <form th:action="@{/admin/auction/new}" th:object="${auction}" method="post">
+            <div class="mb-3">
+                <label class="form-label">Title</label>
+                <input type="text" class="form-control" th:field="*{title}" required/>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" th:field="*{description}" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Starting Price</label>
+                <input type="number" step="0.01" class="form-control" th:field="*{startingPrice}" required/>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Start Time</label>
+                <input type="datetime-local" class="form-control" th:field="*{startTime}" required/>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">End Time</label>
+                <input type="datetime-local" class="form-control" th:field="*{endTime}" required/>
+            </div>
+            <button type="submit" class="btn btn-success">Create Auction</button>
+        </form>
+        <a href="/admin/auctions" class="btn btn-secondary mt-3">Back</a>
+    </div>
+
+    
+    <!-- Bootstrap JS Bundle CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

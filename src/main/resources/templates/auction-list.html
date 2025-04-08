@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Available Auctions</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+        .status-active {
+            color: white;
+            background-color: #28a745;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .status-closed {
+            color: white;
+            background-color: #dc3545;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+         /* ...existing styles... */
+    .btn-live {
+        background-color: #0d6efd;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-live:hover {
+        background-color: #0b5ed7;
+    }
+
+    .blinking-dot {
+        font-size: 0.85rem;
+        color: red;
+        animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+    }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/user/dashboard">Auction System</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/auctions">View Auctions</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-danger text-white" href="/user/logout">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Content -->
+<div class="container mt-4">
+    <div class="header-row mb-3">
+        <h2 class="mb-0">Available Auctions</h2>
+        <a href="/auctions/live-auctions" class="btn btn-live">
+            <span class="blinking-dot">🔴</span> Live Auctions
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th>Title</th>
+                    <th>Starting Price</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="auction : ${auctions}">
+                    <td th:text="${auction.title}"></td>
+                    <td>₹<span th:text="${auction.startingPrice}"></span></td>
+                    <td>
+                        <span th:classappend="${auction.status == 'ACTIVE'} ? 'status-active' : 'status-closed'"
+                              th:text="${auction.status}">Status</span>
+                    </td>
+                    <td>
+                        <a th:href="@{'/auctions/' + ${auction.id}}" class="btn btn-outline-primary btn-sm">View</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <a href="/dashboard" class="btn btn-secondary mt-3">⬅ Back to Dashboard</a>
+</div>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

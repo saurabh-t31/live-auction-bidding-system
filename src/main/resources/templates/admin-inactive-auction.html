@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Inactive Auctions</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Admin Dashboard</a>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h2>Inactive Auctions</h2>
+    <div th:if="${#lists.isEmpty(auctions)}">
+        <p class="text-muted">No inactive auctions available.</p>
+    </div>
+    <div th:if="${!#lists.isEmpty(auctions)}">
+        <table class="table table-bordered mt-3">
+            <thead class="table-dark">
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>End Time</th>
+                    <th>Final Price</th>
+                    <th>Winner</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="auction : ${auctions}">
+                    <td th:text="${auction.title}"></td>
+                    <td th:text="${auction.description}"></td>
+                    <td th:text="${#temporals.format(auction.endTime, 'dd-MM-yyyy HH:mm')}"></td>
+                    <td>₹<span th:text="${auction.currentPrice != null ? auction.currentPrice : 'N/A'}"></span></td>
+                    <td th:text="${auction.winner != null ? auction.winner.username : 'Not declared'}"></td>
+                    <td> <a th:href="@{/admin/auction-details/{id}(id=${auction.id})}" class="btn btn-primary btn-sm">View</a> </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Auction Details</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: #f4f4f9; height: 100vh; display: flex; flex-direction: column; }
+        .navbar { background-color: #343a40; padding: 12px 20px; }
+        .navbar-brand { font-weight: bold; color: #fff !important; }
+        .container-wrapper { flex-grow: 1; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .auction-container { width: 100%; max-width: 800px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+        #liveBids { height: 180px; overflow-y: auto; background-color: #e9ecef; padding: 10px; border-radius: 5px; }
+        .bid-box { padding: 8px; border-bottom: 1px solid #ddd; transition: background 0.3s ease; }
+        .bid-box:last-child { background: #d4edda; font-weight: bold; }
+        .form-control { height: 45px; }
+        .countdown { 
+            font-size: 22px; 
+            font-weight: bold; 
+            text-align: center; 
+            padding: 7px; 
+            background: #222; 
+            color: #ff4757; 
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px #ff6b81, 0 0 10px #ff6b81;
+        }        .btn { width: 100%; }
+    </style>
+</head>
+<body>
+
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand" href="#">QuickBid</a>
+</nav>
+
+<div class="container-wrapper">
+    <div class="auction-container">
+        <h2 th:text="${auction.title}" class="text-center">Auction Item</h2>
+        <p class="text-center"><b>Starting Price:</b> ₹<span th:text="${auction.startingPrice}"></span></p>
+        <h4 class="text-center text-primary"><b>Current Price:</b> ₹<span id="currentPrice" th:text="${auction.currentPrice}"></span></h4>
+        <p class="text-center"><b>Status:</b> <span id="auctionStatus" th:text="${auction.status}"></span></p>
+        <p class="text-center"><b>End Time:</b> <span id="auctionTime" th:text="${#temporals.format(auction.endTime, ' hh:mm:ss a')}"></span></p>
+        <p class="text-center"><b>Ends In:</b> <span id="countdown" class="countdown"></span></p>
+
+        <hr>
+
+        <!-- Live Bids Section -->
+        <h4>Live Bids</h4>
+        <div id="liveBids">
+            <div th:if="${not #lists.isEmpty(bids)}">
+                <div th:each="bid : ${bids}" class="bid-box p-2 mb-2 border rounded">
+                    <b th:text="${bid.user.name}"></b>  
+                    <span class="text-primary">placed ₹<span th:text="${bid.bidAmount}"></span></span>
+                    <small class="text-muted d-block" th:text="${#temporals.format(bid.bidTime, 'dd-MM-YYYY hh:mm:ss a')}"></small>
+                </div>
+            </div>
+            <p th:unless="${not #lists.isEmpty(bids)}" class="text-muted">No bids for now !!</p>
+        </div>
+
+        <hr>
+
+        <!-- Small Auction Ended Alert -->
+        <div id="auctionEndedAlert" class="alert alert-danger text-center position-fixed top-50 start-50 translate-middle d-none" style="width: 300px; font-size: 18px; font-weight: bold;">
+                ⚠️ Auction has Ended!
+        </div>
+
+
+        <!-- Place Bid Form -->
+        <h4>Place a Bid</h4>
+        <form th:action="@{/auctions/{id}/bid(id=${auction.id})}" method="post" id="bidForm">
+            <div id="errorMessage" class="alert alert-danger mt-2" style="display: none;"></div>
+            <div class="mb-3">
+                <label for="bidAmount" class="form-label">Bid Amount (₹)</label>
+                <input type="number" class="form-control" id="bidAmount" name="bidAmount" required>
+            </div>
+            <button type="submit" class="btn btn-primary" id="bidButton">Place Bid</button>
+        </form>
+
+        <a href="/auctions" class="btn btn-secondary mt-3">Back to Auctions</a>
+    </div>
+</div>
+
+<div id="auctionData" th:attr="data-auction-id=${auction.id}, data-auction-end=${auction.endTime}"></div>
+
+<script>
+    document.querySelector("form").addEventListener("submit", function (event) {
+        event.preventDefault();
+        var bidAmount = parseFloat(document.getElementById('bidAmount').value);
+        var currentPrice = parseFloat(document.getElementById('currentPrice').innerText);
+        
+        if (isNaN(bidAmount) || bidAmount <= currentPrice) {
+            showError("⚠️ Bid must be higher than the current price (₹" + currentPrice + ").");
+            return;
+        }
+
+        this.submit();
+    });
+
+    function showError(message) {
+        var errorBox = document.getElementById('errorMessage');
+        errorBox.innerText = message;
+        errorBox.style.display = 'block';
+        setTimeout(() => { errorBox.style.display = 'none'; }, 3000);
+    }
+
+    var auctionId = document.getElementById('auctionData').getAttribute('data-auction-id');
+    var socket = new SockJS('/ws');
+    var stompClient = Stomp.over(socket);
+
+    stompClient.connect({}, function (frame) {
+        stompClient.subscribe('/topic/bids/' + auctionId, function (message) {
+            var bid = JSON.parse(message.body);
+            displayBid(bid);
+        });
+
+        stompClient.subscribe('/topic/auction-ended', function (message) {
+            var closedAuctionId = message.body;
+            if (closedAuctionId == auctionId) {
+                closeAuctionUI();
+            }
+        });
+    });
+
+    function displayBid(bid) {
+        var bidBox = document.getElementById('liveBids');
+        var bidEntry = `<div class='bid-box'><b>${bid.user.name}</b>: ₹${bid.bidAmount}</div>`;
+        bidBox.insertAdjacentHTML('beforeend', bidEntry);
+        document.getElementById('currentPrice').innerText = bid.bidAmount;
+        bidBox.scrollTop = bidBox.scrollHeight;
+    }
+    
+var endTime = new Date(document.getElementById('auctionData').getAttribute('data-auction-end'));
+
+function updateCountdown() {
+    var now = new Date().getTime();
+    var timeLeft = endTime - now;
+
+    if (timeLeft <= 0) {
+        document.getElementById('countdown').innerText = "Auction Ended";
+        document.getElementById('auctionStatus').innerText = "CLOSED";
+        document.getElementById("bidButton").disabled = true;
+        document.getElementById("bidButton").classList.remove("btn-primary");
+        document.getElementById("bidButton").classList.add("btn-secondary");
+
+        let alertBox = document.getElementById('auctionEndedAlert');
+        alertBox.classList.remove("d-none");
+
+        setTimeout(()=>{
+            alertBox.classList.add("d-none")
+        },5000)
+        clearInterval(countdownInterval);// function continuously running even after the auction has ended of update Timer
+        return;
+    }
+
+    var minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    var seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+    document.getElementById('countdown').innerText = minutes + "m " + seconds + "s";
+}
+
+var countdownInterval = setInterval(updateCountdown, 1000);
+window.onload = updateCountdown;
+
+</script>
+
+</body>
+</html>

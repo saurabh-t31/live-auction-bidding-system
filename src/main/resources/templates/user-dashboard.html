@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>User Dashboard</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        /* Page Background */
+        body {
+            background-color: #f8f9fa;
+        }
+
+        /* Navbar */
+        .navbar-custom {
+            background-color: #343a40;
+        }
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link {
+            color: #ffffff !important;
+        }
+        .navbar-custom .nav-link:hover {
+            color: #ffc107 !important;
+        }
+
+        /* Dashboard Title */
+        .dashboard-title {
+            text-align: center;
+            margin-top: 30px;
+            font-weight: 700;
+            color: #343a40;
+        }
+
+        /* Card Styling */
+        .card {
+            transition: 0.3s;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card:hover {
+            transform: scale(1.02);
+        }
+        .card-icon {
+            font-size: 40px;
+            color: #343a40;
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Footer */
+        .footer {
+            bottom: 0px;
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin-top: 14.25%;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">QUICKBID</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/contact}">Contact</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/user/profile}">Profile</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <a class="nav-link btn btn-danger text-white px-3" th:href="@{/logout}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <div class="container mt-5">
+        <h2 class="dashboard-title">Welcome to Your Auction Dashboard</h2>
+        
+        <!-- Dashboard Cards -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card text-center p-3">
+                    <i class="card-icon bi bi-hammer"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Browse Auctions</h5>
+                        <p class="card-text">View live auctions and place your bids.</p>
+                        <a th:href="@{/auctions}" class="btn btn-primary">View Auctions</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card text-center p-3">
+                    <i class="card-icon bi bi-list-check"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">My Enrolled Auctions</h5>
+                        <p class="card-text">Check the auctions you have joined.</p>
+                        <a th:href="@{/user/enrolled-auctions}" class="btn btn-success">View My Auctions</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card text-center p-3">
+                    <i class="card-icon bi bi-trophy"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Winners</h5>
+                        <p class="card-text">See the winners of completed auctions.</p>
+                        <a th:href="@{/user/winners}" class="btn btn-warning">View Winners</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logout Button -->
+        <div class="text-center mt-4">
+            <a th:href="@{/logout}" class="btn btn-danger" sec:authorize="isAuthenticated()">Logout</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 AuctionSite. All rights reserved.</p>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Bootstrap Icons (for card icons) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+</body>
+</html>
